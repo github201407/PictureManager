@@ -23,7 +23,8 @@
 
         <activity
             android:name=".activity.PhotoViewActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>
