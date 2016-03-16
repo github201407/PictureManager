@@ -25,7 +25,6 @@ import com.jen.timeless.utils.ProgressUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import cn.bmob.v3.BmobQuery;
@@ -117,8 +116,11 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(takePictureIntent, actionCode);
     }
 
-
-
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.upload).setVisible(false);
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -202,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        adapter.addPhotoList(new ArrayList<Res>());
+        downLoadData();
     }
 
     private void downLoadData() {

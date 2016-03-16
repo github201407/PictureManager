@@ -49,6 +49,7 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 String url = arrayList.get(position).getImgUrl();
                 Bundle bundle = new Bundle();
                 bundle.putString("url", url);
+                bundle.putString("flag", "show");
                 PhotoViewActivity.Instance(context, bundle);
             }
 

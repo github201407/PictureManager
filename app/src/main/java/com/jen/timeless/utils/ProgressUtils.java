@@ -9,7 +9,7 @@ import android.app.ProgressDialog;
 public class ProgressUtils {
     private static ProgressDialog progressDialog;
 
-    public static void showProgress(Activity activity){
+    public static void showProgress(Activity activity) {
         progressDialog = new ProgressDialog(activity);
         progressDialog.setIndeterminate(false);
         if (!activity.isFinishing()) {
@@ -17,8 +17,24 @@ public class ProgressUtils {
         }
     }
 
-    public static void hideProgress(){
-        if(progressDialog != null && progressDialog.isShowing())
+    public static void showProgress2(Activity activity) {
+        progressDialog = new ProgressDialog(activity);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        if (!activity.isFinishing()) {
+            progressDialog.show();
+        }
+    }
+
+    public static void setProgress(int curIndex, int curPercent, int total, int totalPercent) {
+        if (progressDialog != null) {
+            progressDialog.setMax(total);
+            progressDialog.setProgress(curIndex);
+            progressDialog.setMessage(String.valueOf(totalPercent));
+        }
+    }
+
+    public static void hideProgress() {
+        if (progressDialog != null && progressDialog.isShowing())
             progressDialog.dismiss();
         progressDialog = null;
     }

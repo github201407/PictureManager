@@ -3,18 +3,18 @@ package com.jen.timeless.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bmob.BmobProFile;
 import com.bmob.btp.callback.UploadBatchListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.jen.timeless.App;
 import com.jen.timeless.R;
 import com.jen.timeless.bean.Res;
 import com.jen.timeless.utils.ProgressUtils;
@@ -35,6 +35,7 @@ public class PhotoViewActivity extends BaseActivity {
         Intent intent = new Intent(context, PhotoViewActivity.class);
         intent.putExtra("bundle", bundle);
         context.startActivity(intent);
+
     }
 
     @Override
@@ -79,8 +80,12 @@ public class PhotoViewActivity extends BaseActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if(flag != null && flag.equals("upload"))
-            menu.findItem(R.id.upload).setVisible(true);
+        MenuItem upLoadMenu = menu.findItem(R.id.upload);
+        if(flag != null && flag.equals("upload")) {
+            upLoadMenu.setVisible(true);
+        } else {
+            upLoadMenu.setVisible(false);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -109,7 +114,7 @@ public class PhotoViewActivity extends BaseActivity {
     }
 
     private void uploadImgs(String imgUrl) {
-        ProgressUtils.showProgress(this);
+        ProgressUtils.showProgress2(this);
         // TODO 代码优化，是否限定必须有图片，显示具体的进度
         BmobProFile.getInstance(PhotoViewActivity.this).uploadBatch(new String[]{imgUrl}, new UploadBatchListener() {
 
@@ -132,6 +137,7 @@ public class PhotoViewActivity extends BaseActivity {
                 // curPercent  :表示当前上传文件的进度值（百分比）
                 // total       :表示总的上传文件数
                 // totalPercent:表示总的上传进度（百分比）
+                ProgressUtils.setProgress(curIndex, curPercent, total, totalPercent);
                 Log.i("bmob", "onProgress :" + curIndex + "---" + curPercent + "---" + total + "----" + totalPercent);
             }
 
@@ -163,7 +169,7 @@ public class PhotoViewActivity extends BaseActivity {
             @Override
             public void onSuccess() {
                 ProgressUtils.hideProgress();
-//                showToast(actionView, "提交成功");
+                showToast("提交成功");
                 Log.e("info", "Success");
                 finish();
             }
@@ -172,13 +178,13 @@ public class PhotoViewActivity extends BaseActivity {
             public void onFailure(int i, String s) {
                 ProgressUtils.hideProgress();
                 Log.e("info", "Failure");
-//                showToast(actionView, "提交失败，请重试！");
+                showToast("提交失败，请重试！");
             }
         });
     }
 
-    private void showToast(View view, String msg){
-        Snackbar.make(view, msg, Snackbar.LENGTH_LONG).setAction("Action", null).show();
+    private void showToast(String msg){
+        Toast.makeText(App.getApplication(), msg, Toast.LENGTH_SHORT).show();
     }
 
 }
