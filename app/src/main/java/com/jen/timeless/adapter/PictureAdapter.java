@@ -14,8 +14,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.jen.timeless.R;
 import com.jen.timeless.activity.PhotoViewActivity;
+import com.jen.timeless.bean.Res;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jen on 2016/3/16.
@@ -23,15 +25,10 @@ import java.util.ArrayList;
 public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private Context context;
-    private ArrayList<String> arrayList;
+    private List<Res> arrayList;
     public PictureAdapter(Context context) {
         this.context = context;
         arrayList = new ArrayList<>();
-        arrayList.add("http://b.hiphotos.baidu.com/image/h%3D200/sign=8c8dc382d239b60052ce08b7d9513526/b58f8c5494eef01fa36ad8a4e7fe9925bc317d51.jpg");
-        arrayList.add("http://b.hiphotos.baidu.com/image/h%3D200/sign=8c8dc382d239b60052ce08b7d9513526/b58f8c5494eef01fa36ad8a4e7fe9925bc317d51.jpg");
-        arrayList.add("http://b.hiphotos.baidu.com/image/h%3D200/sign=8c8dc382d239b60052ce08b7d9513526/b58f8c5494eef01fa36ad8a4e7fe9925bc317d51.jpg");
-        arrayList.add("http://b.hiphotos.baidu.com/image/h%3D200/sign=8c8dc382d239b60052ce08b7d9513526/b58f8c5494eef01fa36ad8a4e7fe9925bc317d51.jpg");
-        arrayList.add("http://b.hiphotos.baidu.com/image/h%3D200/sign=8c8dc382d239b60052ce08b7d9513526/b58f8c5494eef01fa36ad8a4e7fe9925bc317d51.jpg");
     }
 
 
@@ -49,7 +46,7 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             @Override
             public void onWholeClick(int position) {
 //                Toast.makeText(context, "whole:" + String.valueOf(position), Toast.LENGTH_SHORT).show();
-                String url = arrayList.get(position);
+                String url = arrayList.get(position).getImgUrl();
                 Bundle bundle = new Bundle();
                 bundle.putString("url", url);
                 PhotoViewActivity.Instance(context, bundle);
@@ -64,7 +61,7 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        String url = arrayList.get(position);
+        String url = arrayList.get(position).getImgUrl();
         Glide.with(context).load(url)
                 .placeholder(android.R.drawable.stat_notify_error)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -76,6 +73,11 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public int getItemCount() {
         return arrayList.size();
+    }
+
+    public void addPhotoList(List<Res> res) {
+        arrayList = res;
+        notifyDataSetChanged();
     }
 
     public static class CardViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
