@@ -126,8 +126,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         mMenu = menu;
-        isUpload = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("isUpload", false);
-//        menu.findItem(R.id.upload).setVisible(isUpload);
+//        isUpload = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("isUpload", false);
+        menu.findItem(R.id.upload).setVisible(false);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -216,8 +216,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-//        downLoadData();
-        loadLocalPhotos();
+        downLoadData();
+//        loadLocalPhotos();
     }
 
     private void downLoadData() {
