@@ -8,16 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.jen.timeless.R;
 import com.jen.timeless.activity.PhotoViewActivity;
-import com.jen.timeless.bean.Res;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jen on 2016/3/16.
@@ -25,13 +22,15 @@ import java.util.List;
 public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private Context context;
-    private List<Res> arrayList;
+    private ArrayList<String> arrayList;
+    private ArrayList<String> arrayListChecked;
+    private boolean checkboxIsShow = false;
+
     public PictureAdapter(Context context) {
         this.context = context;
         arrayList = new ArrayList<>();
+        arrayListChecked = new ArrayList<>();
     }
-
-
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -46,7 +45,7 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             @Override
             public void onWholeClick(int position) {
 //                Toast.makeText(context, "whole:" + String.valueOf(position), Toast.LENGTH_SHORT).show();
-                String url = arrayList.get(position).getImgUrl();
+                String url = getItem(position);
                 Bundle bundle = new Bundle();
                 bundle.putString("url", url);
                 bundle.putString("flag", "show");
@@ -55,20 +54,37 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             @Override
             public void onOverflowClick(View v, int position) {
-                Toast.makeText(context, "checkout:" + String.valueOf(position), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, "checkout:" + String.valueOf(position), Toast.LENGTH_SHORT).show();
+                String url = getItem(position);
+                CheckBox checkBox = (CheckBox)v;
+                if(checkBox.isChecked()){
+                    if(!arrayListChecked.contains(url))
+                        arrayListChecked.add(url);
+                }else {
+                    if(arrayListChecked.contains(url))
+                        arrayListChecked.remove(url);
+                }
             }
         });
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        String url = arrayList.get(position).getImgUrl();
+        String url = getItem(position);
+        CardViewHolder cardViewHolder = (CardViewHolder) holder;
         Glide.with(context).load(url)
                 .placeholder(android.R.drawable.stat_notify_error)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .centerCrop()
                 .error(android.R.drawable.stat_notify_error)
-                .into(((CardViewHolder)holder).imageView);
+                .into(cardViewHolder.imageView);
+        cardViewHolder.checkbox.setVisibility(checkboxIsShow ? View.VISIBLE : View.GONE);
+        boolean isChecked = arrayListChecked.contains(url);
+        cardViewHolder.checkbox.setChecked(isChecked);
+    }
+
+    public String getItem(int position){
+        return arrayList.get(position);
     }
 
     @Override
@@ -76,9 +92,18 @@ public class PictureAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return arrayList.size();
     }
 
-    public void addPhotoList(List<Res> res) {
-        arrayList = res;
+    public void addPhotoList(ArrayList<String> arrayList) {
+        this.arrayList = arrayList;
         notifyDataSetChanged();
+    }
+
+    public void setPickPhoto(boolean isShowCheckbox){
+        this.checkboxIsShow = isShowCheckbox;
+        notifyDataSetChanged();
+    }
+
+    public ArrayList<String> getArrayListChecked() {
+        return arrayListChecked;
     }
 
     public static class CardViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

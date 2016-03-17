@@ -1,8 +1,11 @@
 package com.jen.timeless.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Menu;
@@ -10,17 +13,14 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bmob.BmobProFile;
-import com.bmob.btp.callback.UploadBatchListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.jen.timeless.App;
 import com.jen.timeless.R;
-import com.jen.timeless.bean.Res;
-import com.jen.timeless.utils.ProgressUtils;
+import com.jen.timeless.utils.ImageUtils;
 
-import cn.bmob.v3.datatype.BmobFile;
-import cn.bmob.v3.listener.SaveListener;
+import java.util.ArrayList;
+
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
@@ -38,11 +38,29 @@ public class PhotoViewActivity extends BaseActivity {
 
     }
 
+    private static Activity photoViewActivity;
+    public static Handler mHandler = new Handler(){
+
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what == 0 && photoViewActivity != null){
+                photoViewActivity.finish();
+                Log.e("info", "Success");
+            } else if (msg.what == 1){
+                Log.e("info", "Failure");
+            }
+        }
+    };
+
+    private static void showToast(String msg){
+        Toast.makeText(App.getApplication(), msg, Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         layoutResID = R.layout.activity_photo_view;
         super.onCreate(savedInstanceState);
-
+        photoViewActivity = this;
         // Add the Up button
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -107,84 +125,14 @@ public class PhotoViewActivity extends BaseActivity {
         if (id == R.id.action_settings) {
             return true;
         } else if(id == R.id.upload) {
-            uploadImgs(url);
+            ArrayList<String> arrayList = new ArrayList<>();
+            arrayList.add(url);
+            ImageUtils.uploadImgs(mHandler, PhotoViewActivity.this, arrayList);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void uploadImgs(String imgUrl) {
-        ProgressUtils.showProgress2(this);
-        // TODO 代码优化，是否限定必须有图片，显示具体的进度
-        BmobProFile.getInstance(PhotoViewActivity.this).uploadBatch(new String[]{imgUrl}, new UploadBatchListener() {
 
-            @Override
-            public void onSuccess(boolean isFinish, String[] fileNames, String[] urls, BmobFile[] files) {
-                Log.i("bmob", "onProgress :" + isFinish + "---" + fileNames + "---" + urls + "----" + files);
-                if(isFinish) {
-                    String imgUrl = null;
-                    for (BmobFile file : files) {
-                        if(file != null)
-                            imgUrl = file.getUrl();
-                    }
-                    doSubmit(imgUrl);
-                }
-            }
-
-            @Override
-            public void onProgress(int curIndex, int curPercent, int total, int totalPercent) {
-                // curIndex    :表示当前第几个文件正在上传
-                // curPercent  :表示当前上传文件的进度值（百分比）
-                // total       :表示总的上传文件数
-                // totalPercent:表示总的上传进度（百分比）
-                ProgressUtils.setProgress(curIndex, curPercent, total, totalPercent);
-                Log.i("bmob", "onProgress :" + curIndex + "---" + curPercent + "---" + total + "----" + totalPercent);
-            }
-
-            @Override
-            public void onError(int statuscode, String errormsg) {
-                ProgressUtils.hideProgress();
-                // TODO Auto-generated method stub
-                Log.i("bmob", "批量上传出错：" + statuscode + "--" + errormsg);
-            }
-        });
-    }
-
-
-    private void doSubmit(String imgUrl) {
-        // ToDo 相关字段空值限制和判断
-        String name = "";
-        String desc = "";
-        String type = "";
-        String want = "";
-        String chargeType = "";
-        Res res = new Res();
-        res.setName(name);
-        res.setLocation(desc);
-        res.setType(chargeType);
-        res.setChangeType(type);
-        res.setWantRes(want);
-        res.setImgUrl(imgUrl);
-        res.save(this, new SaveListener() {
-            @Override
-            public void onSuccess() {
-                ProgressUtils.hideProgress();
-                showToast("提交成功");
-                Log.e("info", "Success");
-                finish();
-            }
-
-            @Override
-            public void onFailure(int i, String s) {
-                ProgressUtils.hideProgress();
-                Log.e("info", "Failure");
-                showToast("提交失败，请重试！");
-            }
-        });
-    }
-
-    private void showToast(String msg){
-        Toast.makeText(App.getApplication(), msg, Toast.LENGTH_SHORT).show();
-    }
 
 }

@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -21,10 +23,12 @@ import com.jen.timeless.activity.PhotoViewActivity;
 import com.jen.timeless.adapter.PictureAdapter;
 import com.jen.timeless.bean.Res;
 import com.jen.timeless.utils.CameraUtil;
+import com.jen.timeless.utils.ImageUtils;
 import com.jen.timeless.utils.ProgressUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.bmob.v3.BmobQuery;
@@ -33,6 +37,9 @@ import cn.bmob.v3.listener.FindListener;
 public class MainActivity extends AppCompatActivity {
 
     private PictureAdapter adapter;
+    private Menu mMenu;
+    private boolean isUpload = false;
+    private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +125,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.upload).setVisible(false);
+        mMenu = menu;
+        isUpload = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("isUpload", false);
+//        menu.findItem(R.id.upload).setVisible(isUpload);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -139,6 +148,9 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if(id == R.id.upload) {
+            ArrayList<String> arrayListChecked = adapter.getArrayListChecked();
+            ImageUtils.uploadImgs(mHandler, MainActivity.this, arrayListChecked);
         }
 
         return super.onOptionsItemSelected(item);
@@ -204,7 +216,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        downLoadData();
+//        downLoadData();
+        loadLocalPhotos();
     }
 
     private void downLoadData() {
@@ -215,7 +228,10 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(List<Res> list) {
                 ProgressUtils.hideProgress();
                 Log.e("bmob", "success:");
-                adapter.addPhotoList(list);
+                ArrayList<String> arrayList = new ArrayList<String>();
+                for(Res res : list)
+                    arrayList.add(res.getImgUrl());
+                adapter.addPhotoList(arrayList);
             }
 
             @Override
@@ -224,5 +240,22 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("bmob", "error:" + i + "," + s);
             }
         });
+    }
+
+    private void loadLocalPhotos(){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<String> arrayList = ImageUtils.getCameraImages(MainActivity.this);
+                adapter.addPhotoList(arrayList);
+            }
+        };
+        new Thread(runnable).run();
+        adapter.setPickPhoto(true);
+        if (mMenu != null) {
+            mMenu.findItem(R.id.upload).setVisible(true);
+            isUpload = true;
+            PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putBoolean("isUpload", isUpload).commit();
+        }
     }
 }
